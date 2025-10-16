@@ -68,7 +68,6 @@ body {
 .bubble-3 { width: 60px; height: 60px; top: 40%; right: 15%; }
 .bubble-4 { width: 100px; height: 100px; top: 70%; right: 20%; }
 
-/* Navigation */
 .navbar { 
     background: rgba(255,255,255,0.4); 
     backdrop-filter: blur(12px); 
@@ -122,8 +121,16 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(255,128,160,0.3);
 }
+.btn-primary:disabled {
+    background: #b0b0b0 !important;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
 .form-label { font-weight: 600; color: #555; margin-bottom: 8px; }
-.error-message { color: #ff4d80; margin-bottom: 15px; font-weight: 500; }
+.error-message { color: #ff4d80; margin-bottom: 10px; font-weight: 500; font-size: 0.9rem; }
+.success-message { color: green; margin-bottom: 10px; font-weight: 500; font-size: 0.9rem; }
 .input-group-text {
     background: transparent;
     border-left: none;
@@ -194,6 +201,7 @@ body {
                     <input type="password" id="confirmpassword" name="confirmpassword" class="form-control" placeholder="Confirm password" required>
                     <span class="input-group-text" onclick="togglePassword('confirmpassword', this)"><i class="fas fa-eye"></i></span>
                 </div>
+                <div id="matchMessage" class="error-message"></div>
             </div>
             <div class="mb-4">
                 <label for="accountType" class="form-label d-flex align-items-center"><i class="fas fa-users me-2"></i>Account Type</label>
@@ -202,7 +210,7 @@ body {
                     <option value="admin">Admin</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary mb-3"><i class="fas fa-user-plus me-1"></i>Register</button>
+            <button type="submit" class="btn btn-primary mb-3" id="submitBtn"><i class="fas fa-user-plus me-1"></i>Register</button>
             <p class="text-center">Already have an account? <a href="login.php" style="color: #85c1ff;"><i class="fas fa-sign-in-alt me-1"></i>Login</a></p>
         </form>
     </div>
@@ -214,20 +222,22 @@ function togglePassword(fieldId, el) {
     const icon = el.querySelector("i");
     if (field.type === "password") {
         field.type = "text";
-        icon.classList.remove("fa-eye");
-        icon.classList.add("fa-eye-slash");
+        icon.classList.replace("fa-eye", "fa-eye-slash");
     } else {
         field.type = "password";
-        icon.classList.remove("fa-eye-slash");
-        icon.classList.add("fa-eye");
+        icon.classList.replace("fa-eye-slash", "fa-eye");
     }
 }
 
 const passwordField = document.getElementById('password');
+const confirmField = document.getElementById('confirmpassword');
 const passwordErrorsDiv = document.getElementById('passwordErrors');
+const matchMessageDiv = document.getElementById('matchMessage');
+const submitBtn = document.getElementById('submitBtn');
 
-passwordField.addEventListener('input', function() {
+function validatePasswords() {
     const val = passwordField.value;
+    const confirmVal = confirmField.value;
     let errors = [];
 
     if (val.length < 6) errors.push("Password must be at least 6 characters.");
@@ -236,10 +246,21 @@ passwordField.addEventListener('input', function() {
 
     passwordErrorsDiv.innerHTML = errors.join('<br>');
 
-    // Disable submit if errors exist
-    document.querySelector('button[type="submit"]').disabled = errors.length > 0;
-});
+    if (confirmVal.length > 0) {
+        if (val === confirmVal) {
+            matchMessageDiv.innerHTML = '<span class="success-message">✅ Passwords match</span>';
+        } else {
+            matchMessageDiv.innerHTML = '❌ Passwords do not match.';
+        }
+    } else {
+        matchMessageDiv.innerHTML = '';
+    }
 
+    submitBtn.disabled = errors.length > 0 || val !== confirmVal;
+}
+
+passwordField.addEventListener('input', validatePasswords);
+confirmField.addEventListener('input', validatePasswords);
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
