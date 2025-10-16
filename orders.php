@@ -156,9 +156,8 @@ body {
         <li class="nav-item"><a class="nav-link" href="view_customer.php">Customers</a></li>
         <li class="nav-item"><a class="nav-link" href="adminprofile.php">Profile</a></li>
         <li class="nav-item">
-          <a class="nav-link text-danger" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
-            Logout
-          </a>
+          <a class="nav-link text-danger" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a>
+        </li>
       </ul>
     </div>
   </div>
@@ -167,7 +166,6 @@ body {
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h2 class="page-title mb-0">📋 All Orders</h2>
-    <!-- ✅ Back Button -->
     <a href="admindashboard.php" class="btn btn-outline-secondary">
       <i class="fas fa-arrow-left me-1"></i> Back
     </a>
@@ -185,6 +183,12 @@ body {
           <h6>#<?= $o['id'] ?> (<?= htmlspecialchars($o['username']) ?>)</h6>
           <p><strong>Service:</strong> <?= htmlspecialchars($o['service']) ?></p>
           <p><strong>Weight:</strong> <?= htmlspecialchars($o['weight']) ?> kg ⚖️</p>
+          <?php if (!empty($o['soap_qty']) && $o['soap_qty'] > 0): ?>
+            <p><strong>Soap:</strong> <?= htmlspecialchars($o['soap_qty']) ?> 🧼</p>
+          <?php endif; ?>
+          <?php if (!empty($o['cond_qty']) && $o['cond_qty'] > 0): ?>
+            <p><strong>Fabric Conditioner:</strong> <?= htmlspecialchars($o['cond_qty']) ?> 🧴</p>
+          <?php endif; ?>
           <p><strong>Price:</strong> ₱<?= number_format($o['price'],2) ?></p>
           <p><strong>Status:</strong>
             <span class="badge <?= 
