@@ -306,55 +306,59 @@ body {
 <div class="modal fade" id="editOrderModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog"><div class="modal-content">
     <form method="POST" action="">
-    <div class="modal-header">
-      <h5 class="modal-title">Edit Order 🖊️</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-    </div>
-    <div class="modal-body">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Order 🖊️</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
         <input type="hidden" name="update_order" value="1">
         <input type="hidden" name="order_id" id="editOrderId">
-        <input type="hidden" name="delete_order" value="1">
-        <input type="hidden" name="order_id" id="deleteOrderId">
 
         <div class="mb-3">
-            <label class="form-label">Service Type 🧺</label>
-            <select class="form-select" name="serviceType" id="editServiceType" required>
-              <option value="Wash Only" data-price="50">Wash Only (₱50/kg)</option>
-              <option value="Wash & Fold" data-price="70">Wash & Fold (₱70/kg)</option>
-              <option value="Wash, Iron & Fold" data-price="100">Wash, Iron & Fold (₱100/kg)</option>
-            </select>
+          <label class="form-label">Service Type 🧺</label>
+          <select class="form-select" name="serviceType" id="editServiceType" required>
+            <option value="Wash Only" data-price="50">Wash Only (₱50/kg)</option>
+            <option value="Wash & Fold" data-price="70">Wash & Fold (₱70/kg)</option>
+            <option value="Wash, Iron & Fold" data-price="100">Wash, Iron & Fold (₱100/kg)</option>
+          </select>
         </div>
         <div class="mb-3">
-            <label class="form-label">Estimated Weight (kg) ⚖️</label>
-            <input type="number" class="form-control" name="estimatedWeight" id="editEstimatedWeight" min="1" step="0.5" required>
+          <label class="form-label">Estimated Weight (kg) ⚖️</label>
+          <input type="number" class="form-control" name="estimatedWeight" id="editEstimatedWeight" min="1" step="0.5" required>
         </div>
         <div class="mb-3">
-            <label class="form-label">Soap 🧴 (₱10 each)</label>
-            <input type="number" class="form-control" name="soapQty" id="editSoapQty" value="0" min="0">
+          <label class="form-label">Soap 🧴 (₱10 each)</label>
+          <input type="number" class="form-control" name="soapQty" id="editSoapQty" value="0" min="0">
         </div>
         <div class="mb-3">
-            <label class="form-label">Fabric Conditioner 🍃 (₱15 each)</label>
-            <input type="number" class="form-control" name="condQty" id="editCondQty" value="0" min="0">
+          <label class="form-label">Fabric Conditioner 🍃 (₱15 each)</label>
+          <input type="number" class="form-control" name="condQty" id="editCondQty" value="0" min="0">
         </div>
         <div class="mb-3">
-            <label class="form-label">Special Instructions ✨</label>
-            <textarea class="form-control" name="instructions" id="editInstructions" rows="2"></textarea>
+          <label class="form-label">Special Instructions ✨</label>
+          <textarea class="form-control" name="instructions" id="editInstructions" rows="2"></textarea>
         </div>
         <div class="mb-3">
-            <label class="form-label">Total Cost 💰</label>
-            <input type="text" class="form-control" name="totalCost" id="editTotalCost" readonly required>
+          <label class="form-label">Total Cost 💰</label>
+          <input type="text" class="form-control" name="totalCost" id="editTotalCost" readonly required>
         </div>
 
         <!-- Buttons -->
         <div class="d-flex gap-2 justify-content-between">
-            <button type="submit" name="update_order" class="btn btn-primary flex-grow-1" style="padding: 6px 12px; font-size: 0.9rem;">Update</button>
-            <button type="submit" name="delete_order" class="btn btn-danger flex-grow-1" style="padding: 6px 12px; font-size: 0.9rem;" onclick="return confirm('Are you sure you want to delete this order?');">Delete</button>
+          <button type="submit" name="update_order" class="btn btn-primary flex-grow-1">Update</button>
         </div>
+      </div>
+    </form>
 
-    </div>
+    <!-- Separate delete form -->
+    <form method="POST" action="" onsubmit="return confirm('Are you sure you want to delete this order?');">
+      <input type="hidden" name="delete_order" value="1">
+      <input type="hidden" name="order_id" id="deleteOrderId">
+      <button type="submit" class="btn btn-danger w-100">Delete</button>
     </form>
   </div></div>
 </div>
+
 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
