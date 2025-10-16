@@ -17,9 +17,19 @@ $result = $stmt->get_result();
 $admin = $result->fetch_assoc();
 $admin_name = $admin['username'];
 
-// Fetch all registered customers
+// Fetch all registered customers with their order count
 $customers = [];
-$sql = "SELECT id, firstname, lastname, email, account_type FROM users WHERE account_type='customer' ORDER BY id DESC";
+$sql = "
+    SELECT 
+        u.id, 
+        u.firstname, 
+        u.lastname, 
+        u.email,
+        (SELECT COUNT(*) FROM orders WHERE user_id = u.id) AS total_orders
+    FROM users u
+    WHERE u.account_type = 'customer'
+    ORDER BY u.id DESC
+";
 $result = $conn->query($sql);
 if(!$result){
     die("Query failed: " . $conn->error);
@@ -39,14 +49,14 @@ while($row = $result->fetch_assoc()){
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 <style>
 body {
-        background: linear-gradient(135deg, #a0e7e5 0%, #ffd6e0 50%, #cdb4db 100%);
-        min-height: 100vh;
-        position: relative;
-        overflow-x: hidden;
-        font-family: 'Poppins', sans-serif;
-        color: #0f172a;
-    }
-    .bubble {
+    background: linear-gradient(135deg, #a0e7e5 0%, #ffd6e0 50%, #cdb4db 100%);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+    font-family: 'Poppins', sans-serif;
+    color: #0f172a;
+}
+.bubble {
     position: absolute;
     border-radius: 50%;
     background: rgba(255,255,255,0.2);
@@ -61,30 +71,29 @@ body {
 .bubble-4 { width: 100px; height: 100px; top: 70%; right: 20%; }
 
 .navbar { 
-        background: linear-gradient(90deg, #a0e7e5 0%, #ffd6e0 100%);
-        padding: 1rem 2rem;
-        border-radius: 20px;
-        margin: 20px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    }
-    .navbar-brand { 
-        font-weight: bold; 
-        font-size: 1.8rem; 
-        color: #5dade2 !important; 
-        display:flex; 
-        align-items:center; 
-    }
-    .navbar-brand i { margin-right: 8px; }
-    .navbar-nav .nav-link { 
-        font-size: 1.1rem;
-        margin-left: 15px; 
-        color: #5dade2 !important; 
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-    .navbar-nav .nav-link.active { font-weight: 600; color: #ff80a0 !important; }
-    .navbar-nav .nav-link:hover { color: #ff80a0 !important; }
-
+    background: linear-gradient(90deg, #a0e7e5 0%, #ffd6e0 100%);
+    padding: 1rem 2rem;
+    border-radius: 20px;
+    margin: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+.navbar-brand { 
+    font-weight: bold; 
+    font-size: 1.8rem; 
+    color: #5dade2 !important; 
+    display:flex; 
+    align-items:center; 
+}
+.navbar-brand i { margin-right: 8px; }
+.navbar-nav .nav-link { 
+    font-size: 1.1rem;
+    margin-left: 15px; 
+    color: #5dade2 !important; 
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+.navbar-nav .nav-link.active { font-weight: 600; color: #ff80a0 !important; }
+.navbar-nav .nav-link:hover { color: #ff80a0 !important; }
 
 /* Cards and table container */
 .table-container { 
@@ -129,7 +138,7 @@ body {
       <ul class="navbar-nav">
         <li class="nav-item"><a class="nav-link" href="admindashboard.php">Dashboard</a></li>
         <li class="nav-item"><a class="nav-link active" href="view_customer.php">Customers</a></li>
-                <li class="nav-item"><a class="nav-link" href="adminprofile.php">Profile</a></li>
+        <li class="nav-item"><a class="nav-link" href="adminprofile.php">Profile</a></li>
         <li class="nav-item">
           <a class="nav-link text-danger" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
             Logout
@@ -170,7 +179,7 @@ body {
                     <th>First Name</th>
                     <th>Last Name</th>
                     <th>Email</th>
-                    <th>Account Type</th>
+                    <th>Orders</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -181,7 +190,7 @@ body {
                     <td><?= htmlspecialchars($c['firstname']) ?></td>
                     <td><?= htmlspecialchars($c['lastname']) ?></td>
                     <td><?= htmlspecialchars($c['email']) ?></td>
-                    <td><?= htmlspecialchars($c['account_type']) ?></td>
+                    <td><?= htmlspecialchars($c['total_orders']) ?></td>
                     <td>
                         <button class="btn btn-sm btn-info" onclick='viewDetails(<?= json_encode($c) ?>)'>
                             <i class="fas fa-eye"></i> View
@@ -219,7 +228,7 @@ function viewDetails(customer){
         <p><strong>First Name:</strong> ${customer.firstname}</p>
         <p><strong>Last Name:</strong> ${customer.lastname}</p>
         <p><strong>Email:</strong> ${customer.email}</p>
-        <p><strong>Account Type:</strong> ${customer.account_type}</p>
+        <p><strong>Orders:</strong> ${customer.total_orders}</p>
     `;
     var modal = new bootstrap.Modal(document.getElementById('customerModal'));
     modal.show();
