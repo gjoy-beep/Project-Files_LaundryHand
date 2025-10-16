@@ -13,19 +13,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $confirmpassword = trim($_POST['confirmpassword']);
     $accountType = $_POST['accountType'];
 
-   if (!preg_match('/^(?=.*[0-9])(?=.*[\W_]).{6,}$/', $password)) {
-       $errors[] = "Password must be at least 6 characters, contain at least 1 number and 1 special character.";
-   }
+    // Password validation
+    if (!preg_match('/^(?=.*[0-9])(?=.*[\W_]).{6,}$/', $password)) {
+        $errors[] = "Password must be at least 6 characters, contain at least 1 number and 1 special character.";
+    }
 
-    if ($password !== $confirmpassword) $errors[] = "Passwords do not match.";
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Invalid email format.";
+    // Confirm password check
+    if ($password !== $confirmpassword) {
+        $errors[] = "Passwords do not match.";
+    }
 
+    // Email format validation
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = "Invalid email format.";
+    } else {
+        // Restrict email domains
+        if (!preg_match('/@(gmail\.com|edu\.com)$/i', $email)) {
+            $errors[] = "Email must end with @gmail.com or @edu.com.";
+        }
+    }
+
+    // Check if email or username already exists
     $stmt = $conn->prepare("SELECT id FROM users WHERE email = ? OR username = ?");
     $stmt->bind_param("ss", $email, $username);
     $stmt->execute();
     $result = $stmt->get_result();
-    if ($result->num_rows > 0) $errors[] = "Email or Username already exists.";
+    if ($result->num_rows > 0) {
+        $errors[] = "Email or Username already exists.";
+    }
 
+    // If no errors, insert new user
     if (empty($errors)) {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         $stmt = $conn->prepare("INSERT INTO users (firstname, lastname, email, username, password, account_type) VALUES (?, ?, ?, ?, ?, ?)");
@@ -35,7 +52,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['success'] = "Registration successful! You can now login.";
             header("Location: login.php");
             exit();
-        } else $errors[] = "Database error: " . $stmt->error;
+        } else {
+            $errors[] = "Database error: " . $stmt->error;
+        }
 
         $stmt->close();
     }
@@ -68,19 +87,8 @@ body {
 .bubble-3 { width: 60px; height: 60px; top: 40%; right: 15%; }
 .bubble-4 { width: 100px; height: 100px; top: 70%; right: 20%; }
 
-.navbar { 
-    background: rgba(255,255,255,0.4); 
-    backdrop-filter: blur(12px); 
-    border-radius: 20px; 
-    margin: 10px 20px; 
-}
-.navbar-brand { 
-    font-weight: bold; 
-    font-size: 1.5rem; 
-    color: #85c1ff !important; 
-    display:flex; 
-    align-items:center; 
-}
+.navbar { background: rgba(255,255,255,0.4); backdrop-filter: blur(12px); border-radius: 20px; margin: 10px 20px; }
+.navbar-brand { font-weight: bold; font-size: 1.5rem; color: #85c1ff !important; display:flex; align-items:center; }
 .navbar-brand i { margin-right: 8px; }
 .navbar-nav .nav-link { color: #85c1ff !important; margin:0 10px; transition: all 0.3s; }
 .navbar-nav .nav-link.active { font-weight: bold; color: #ff8fab !important; }
@@ -122,23 +130,16 @@ body {
     box-shadow: 0 8px 20px rgba(255,128,160,0.3);
 }
 .btn-primary:disabled {
-    background: #b0b0b0 !important;
+    background: gray !important;
     cursor: not-allowed;
     box-shadow: none;
     transform: none;
 }
-
 .form-label { font-weight: 600; color: #555; margin-bottom: 8px; }
 .error-message { color: #ff4d80; margin-bottom: 10px; font-weight: 500; font-size: 0.9rem; }
 .success-message { color: green; margin-bottom: 10px; font-weight: 500; font-size: 0.9rem; }
-.input-group-text {
-    background: transparent;
-    border-left: none;
-    cursor: pointer;
-}
-.input-group .form-control {
-    border-right: none;
-}
+.input-group-text { background: transparent; border-left: none; cursor: pointer; }
+.input-group .form-control { border-right: none; }
 </style>
 </head>
 <body>
@@ -182,6 +183,7 @@ body {
             <div class="mb-3">
                 <label for="email" class="form-label d-flex align-items-center"><i class="fas fa-envelope me-2"></i>Email</label>
                 <input type="email" id="email" name="email" class="form-control" placeholder="Enter email" required>
+                <small id="emailError" class="error-message" style="display:none;">Email must end with @gmail.com or @edu.com</small>
             </div>
             <div class="mb-3">
                 <label for="username" class="form-label d-flex align-items-center"><i class="fas fa-user-circle me-2"></i>Username</label>
@@ -210,7 +212,7 @@ body {
                     <option value="admin">Admin</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary mb-3" id="submitBtn"><i class="fas fa-user-plus me-1"></i>Register</button>
+            <button type="submit" class="btn btn-primary mb-3" id="submitBtn" disabled><i class="fas fa-user-plus me-1"></i>Register</button>
             <p class="text-center">Already have an account? <a href="login.php" style="color: #85c1ff;"><i class="fas fa-sign-in-alt me-1"></i>Login</a></p>
         </form>
     </div>
@@ -220,20 +222,25 @@ body {
 function togglePassword(fieldId, el) {
     const field = document.getElementById(fieldId);
     const icon = el.querySelector("i");
-    if (field.type === "password") {
-        field.type = "text";
-        icon.classList.replace("fa-eye", "fa-eye-slash");
-    } else {
-        field.type = "password";
-        icon.classList.replace("fa-eye-slash", "fa-eye");
-    }
+    field.type = field.type === "password" ? "text" : "password";
+    icon.classList.toggle("fa-eye");
+    icon.classList.toggle("fa-eye-slash");
 }
 
-const passwordField = document.getElementById('password');
-const confirmField = document.getElementById('confirmpassword');
-const passwordErrorsDiv = document.getElementById('passwordErrors');
-const matchMessageDiv = document.getElementById('matchMessage');
-const submitBtn = document.getElementById('submitBtn');
+const email = document.getElementById("email");
+const emailError = document.getElementById("emailError");
+const passwordField = document.getElementById("password");
+const confirmField = document.getElementById("confirmpassword");
+const passwordErrorsDiv = document.getElementById("passwordErrors");
+const matchMessageDiv = document.getElementById("matchMessage");
+const submitBtn = document.getElementById("submitBtn");
+
+function validateEmail() {
+    const value = email.value.trim();
+    const valid = value.endsWith("@gmail.com") || value.endsWith("@edu.com");
+    emailError.style.display = valid || value === "" ? "none" : "block";
+    toggleSubmit();
+}
 
 function validatePasswords() {
     const val = passwordField.value;
@@ -256,11 +263,21 @@ function validatePasswords() {
         matchMessageDiv.innerHTML = '';
     }
 
-    submitBtn.disabled = errors.length > 0 || val !== confirmVal;
+    toggleSubmit();
 }
 
-passwordField.addEventListener('input', validatePasswords);
-confirmField.addEventListener('input', validatePasswords);
+function toggleSubmit() {
+    const emailValid = email.value.endsWith("@gmail.com") || email.value.endsWith("@edu.com");
+    const passValid = passwordErrorsDiv.innerHTML === "";
+    const match = passwordField.value === confirmField.value && passwordField.value !== "";
+    const enable = emailValid && passValid && match;
+    submitBtn.disabled = !enable;
+    submitBtn.style.backgroundColor = enable ? "#ff80a0" : "gray";
+}
+
+email.addEventListener("input", validateEmail);
+passwordField.addEventListener("input", validatePasswords);
+confirmField.addEventListener("input", validatePasswords);
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
