@@ -260,6 +260,15 @@ body {
           <h6>#<?= $o['id'] ?> (<?= htmlspecialchars($o['username']) ?>)</h6>
           <p><strong>Service:</strong> <?= htmlspecialchars($o['service']) ?></p>
           <p><strong>Weight:</strong> <?= htmlspecialchars($o['weight']) ?> kg ⚖️</p>
+
+          <?php if (!empty($o['soap_qty']) && $o['soap_qty'] > 0): ?>
+            <p><strong>Soap:</strong> <?= htmlspecialchars($o['soap_qty']) ?> 🧼</p>
+          <?php endif; ?>
+
+          <?php if (!empty($o['cond_qty']) && $o['cond_qty'] > 0): ?>
+            <p><strong>Fabric Conditioner:</strong> <?= htmlspecialchars($o['cond_qty']) ?> 🧴</p>
+          <?php endif; ?>
+
           <p><strong>Price:</strong> ₱<?= number_format($o['price'],2) ?></p>
           <p><strong>Status:</strong>
             <span class="badge <?= 
